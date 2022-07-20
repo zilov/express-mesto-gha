@@ -11,7 +11,7 @@ router.use('/', userRouter);
 router.use('/', cardsRouter);
 
 router.get((req, res) => {
-  res.status(404).send('404: Page not found!')
+  res.status(404).send({ message : '404: Page not found!'})
 })
 
 module.exports = router;
