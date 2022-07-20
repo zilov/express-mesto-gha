@@ -15,13 +15,13 @@ const createCard = (req, res) => {
         .then(card => res.send(card))
         .catch((err) => res.status(400).send({ message : err.message }))
     })
-    .catch(err => res.send({ maeeage : `Cannot find current user to create card: ${err.message}` }))
+    .catch(err => res.send({ massage : `Cannot find current user to create card: ${err.message}` }))
 }
 
 const deleteCard = (req, res) => {
-  Cards.findByIdAndDelete(req.params.id, (card) => {
+  Cards.findByIdAndDelete(req.params.id, (err, card) => {
     if (!card) {
-      return res.status(404).send({message : `Card was already deleted or not exists`})
+      return res.status(400).send({message : `Card was already deleted or not exists`})
     }
     res.send(card)
   })
@@ -29,23 +29,25 @@ const deleteCard = (req, res) => {
 }
 
 const likeCard = (req, res) => {
-  Users.findById(req.user._id)
-    .then((user) => {
-      Cards.findByIdAndUpdate(
-        req.params.id,
-        {$push : {likes: user}},
-        {new: true},
-        (err, card) => {
-          if (err) {
-            return res.status(400).send({ message: err.message })
-          }
-          if (!card) {
-            return res.status(400).send( { message : err.message })
-          }
-          res.send(card)
+  Users.findById(req.user._id, (err, user) => {
+    if (err) {
+      return res.status(404).send({message : `Cannot find user: ${err.message}`})
+    }
+    Cards.findByIdAndUpdate(
+      req.params.id,
+      {$push : {likes: user}},
+      {new: true},
+      (err, card) => {
+        if (err) {
+          return res.status(400).send( { message : err.message })
         }
-      )
-    })
+        if (!card) {
+          return res.status(404).send( { message : `Card ID is not found` })
+        }
+        res.send(card)
+      }
+    )
+  })
     .catch(err => res.status(500).send({ message : err.message }))
 }
 
@@ -59,7 +61,10 @@ const unlikeCard = (req, res) => {
     { new : true },
     (err, card) => {
       if (err) {
-        return res.status(404).send({ message : err.message })
+        return res.status(400).send({ message : err.message })
+      }
+      if (!card) {
+        return res.status(404).send({ message : `Card ID is not found` })
       }
       res.send(card)
     })
