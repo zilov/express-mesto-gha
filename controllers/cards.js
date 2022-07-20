@@ -20,8 +20,11 @@ const createCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Cards.findByIdAndDelete(req.params.id, (err, card) => {
+    if (err) {
+      return res.status(400).send({message : err.message})
+    }
     if (!card) {
-      return res.status(400).send({message : `Card was already deleted or not exists`})
+      return res.status(404).send({message : `Card was already deleted or not exists`})
     }
     res.send(card)
   })
