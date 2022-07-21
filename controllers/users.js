@@ -1,9 +1,10 @@
 const Users = require('../models/user');
+const { statusCodes } = require('../routes/index');
 
 const getUsers = (req, res) => {
   Users.find({})
     .then(users => res.send(users))
-    .catch((err) => res.status(400).send({ message : err.message }))
+    .catch((err) => res.status(statusCodes.bedRequest).send({ message : err.message }))
 }
 
 const getUser = (req, res) => {
@@ -11,11 +12,11 @@ const getUser = (req, res) => {
   Users.findById(id)
     .then((user) => {
       if (!user) {
-        return res.status(404).send({message: "User not found!"})
+        return res.status(statusCodes.notFound).send({message: "User not found!"})
       }
       res.send(user)
     })
-    .catch((err) => res.status(400).send({message: `Incorrect ID: ${err.message}`}))
+    .catch((err) => res.status(statusCodes.bedRequest).send({message: `Incorrect ID: ${err.message}`}))
 }
 
 const createUser = (req, res) => {
@@ -23,9 +24,9 @@ const createUser = (req, res) => {
     .then(user => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(400).send({message: err.message})
+        return res.status(statusCodes.bedRequest).send({message: err.message})
       }
-      res.status(500).send({ message : err.message })
+      res.status(statusCodes.InternalServerError).send({ message : err.message })
     })
 }
 
@@ -40,11 +41,11 @@ const updateUser = (req, res) => {
     },
     (err, user) => {
       if (!user) {
-        return res.status(400).send({ message : err.message })
+        return res.status(statusCodes.bedRequest).send({ message : err.message })
       }
       return res.send(user)
     })
-    .catch((err) => res.status(500).send({ message : err.message }))
+    .catch((err) => res.status(statusCodes.InternalServerError).send({ message : err.message }))
 }
 
 module.exports = {

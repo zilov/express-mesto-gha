@@ -1,5 +1,6 @@
 {
   "name": "mesto-react",
+  "author": "https://github.com/zilov",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
