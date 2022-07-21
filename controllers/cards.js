@@ -1,6 +1,10 @@
 const Cards = require('../models/card');
 const Users = require('../models/user');
-const { statusCodes } = require('../routes/index');
+const statusCodes = {
+  notFound: 404,
+  badRequest: 400,
+  InternalServerError: 500,
+};
 
 const getCards = (req, res) => {
   Cards.find({})
@@ -14,7 +18,7 @@ const createCard = (req, res) => {
       req.body.owner = user;
       Cards.create(req.body)
         .then((card) => res.send(card))
-        .catch((err) => res.status(statusCodes.bedRequest).send({ message: err.message }));
+        .catch((err) => res.status(statusCodes.badRequest).send({ message: err.message }));
     })
     .catch((err) => res.status(statusCodes.notFound).send({ massage: `Cannot find current user to create card: ${err.message}` }));
 };
@@ -22,7 +26,7 @@ const createCard = (req, res) => {
 const deleteCard = (req, res) => {
   Cards.findByIdAndDelete(req.params.id, (err, card) => {
     if (err) {
-      return res.status(statusCodes.bedRequest).send({ message: err.message });
+      return res.status(statusCodes.badRequest).send({ message: err.message });
     }
     if (!card) {
       return res.status(statusCodes.notFound).send({ message: 'Card was already deleted or not exists' });
@@ -43,7 +47,7 @@ const likeCard = (req, res) => {
       { new: true },
       (cardsErr, card) => {
         if (cardsErr) {
-          return res.status(statusCodes.bedRequest).send({ message: err.message });
+          return res.status(statusCodes.badRequest).send({ message: err.message });
         }
         if (!card) {
           return res.status(statusCodes.notFound).send({ message: 'Card ID is not found' });
@@ -66,7 +70,7 @@ const unlikeCard = (req, res) => {
     { new: true },
     (err, card) => {
       if (err) {
-        return res.status(statusCodes.bedRequest).send({ message: err.message });
+        return res.status(statusCodes.badRequest).send({ message: err.message });
       }
       if (!card) {
         return res.status(statusCodes.notFound).send({ message: 'Card ID is not found' });

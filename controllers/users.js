@@ -1,10 +1,14 @@
 const Users = require('../models/user');
-const { statusCodes } = require('../routes/index');
+const statusCodes = {
+  notFound: 404,
+  badRequest: 400,
+  InternalServerError: 500,
+};
 
 const getUsers = (req, res) => {
   Users.find({})
     .then((users) => res.send(users))
-    .catch((err) => res.status(statusCodes.bedRequest).send({ message: err.message }));
+    .catch((err) => res.status(statusCodes.badRequest).send({ message: err.message }));
 };
 
 const getUser = (req, res) => {
@@ -16,7 +20,7 @@ const getUser = (req, res) => {
       }
       return res.send(user);
     })
-    .catch((err) => res.status(statusCodes.bedRequest).send({ message: `Incorrect ID: ${err.message}` }));
+    .catch((err) => res.status(statusCodes.badRequest).send({ message: `Incorrect ID: ${err.message}` }));
 };
 
 const createUser = (req, res) => {
@@ -24,7 +28,7 @@ const createUser = (req, res) => {
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        return res.status(statusCodes.bedRequest).send({ message: err.message });
+        return res.status(statusCodes.badRequest).send({ message: err.message });
       }
       return res.status(statusCodes.InternalServerError).send({ message: err.message });
     });
@@ -41,7 +45,7 @@ const updateUser = (req, res) => {
     },
     (err, user) => {
       if (!user) {
-        return res.status(statusCodes.bedRequest).send({ message: err.message });
+        return res.status(statusCodes.badRequest).send({ message: err.message });
       }
       return res.send(user);
     },
