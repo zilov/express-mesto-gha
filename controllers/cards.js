@@ -47,7 +47,7 @@ const likeCard = (req, res) => {
       { new: true },
       (cardsErr, card) => {
         if (cardsErr) {
-          return res.status(statusCodes.badRequest).send({ message: err.message });
+          return res.status(statusCodes.badRequest).send({ message: cardsErr.message });
         }
         if (!card) {
           return res.status(statusCodes.notFound).send({ message: 'Card ID is not found' });
