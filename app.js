@@ -6,7 +6,7 @@ const { router } = require('./routes/index');
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
   useCreateIndex: true,
-  useFindAndModify: false
+  useFindAndModify: false,
 });
 
 const app = express();
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 
 app.use((req, res, next) => {
   req.user = {
-    _id: '62d2bea47adba85f8cd89c65'
+    _id: '62d2bea47adba85f8cd89c65',
   };
   next();
 });
