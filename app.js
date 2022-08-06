@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const { celebrate, Joi, errors, isCelebrateError } = require('celebrate');
 const { router } = require('./routes/index');
 const { login, createUser } = require('./controllers/users');
 const { checkToken } = require('./middlewares/auth');
@@ -17,12 +18,24 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }),
+    password: Joi.string().required().min(8)
+  })
+}), login);
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }),
+    password: Joi.string().required().min(8)
+  })
+}), createUser);
 
 app.use(checkToken);
 
 app.use(router);
+
+app.use(errors());
 
 app.listen(3000, () => {
   console.log('Server started!');

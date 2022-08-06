@@ -6,6 +6,7 @@ const statusCodes = {
   badRequest: 400,
   unauthorized: 401,
   notFound: 404,
+  alreadyExists: 409,
   InternalServerError: 500,
 };
 
@@ -28,6 +29,7 @@ const login = (req, res) => {
           const token = jwt.sign({_id: user._id}, 'secretsecretsecret', {expiresIn: '7d'}) // перенести сикрет в отдельный файл
 
           res.cookie('jwt', token, { maxAge: 3600000, httpOnly: true });
+          req.user = {_id: user._id}
           return res.send({token});
         })
     })
@@ -86,14 +88,14 @@ const createUser = (req, res) => {
           });
       })
     }
-    return res.status(statusCodes.unauthorized).send({ message: 'User is already exists! Please sign in!' });
+    return res.status(statusCodes.alreadyExists).send({ message: 'User is already exists! Please sign in!' });
   })
     .catch(err => res.status(statusCodes.InternalServerError).send({message: err.message}))
 };
 
 const updateUser = (req, res) => {
   const id = req.user._id;
-  Users.findOneAndUpdate(
+  Users.findByIdAndUpdate(
     id,
     req.body,
     {
@@ -102,7 +104,7 @@ const updateUser = (req, res) => {
     },
     (err, user) => {
       if (!user) {
-        return res.status(statusCodes.badRequest).send({ message: err.message });
+        return res.status(statusCodes.badRequest).send({ message: 'Cannot update user!' });
       }
       return res.send(user);
     },

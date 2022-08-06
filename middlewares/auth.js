@@ -16,12 +16,12 @@ const checkToken = (req, res, next) => {
     }
     return Users.findById(decoded, (err, user) => {
       if (err) {
-        return res.status(statusCodes.badRequest).send({ message: 'Error in decoding token' });
+        return res.status(statusCodes.unauthorized).send({ message: 'Error in decoding token' });
       }
       if (!user) {
         return res.status(statusCodes.notFound).send({ message: 'Please sign in! Token is expired, cannot find user!' });
       }
-      req.user = { _id : decoded };
+      req.user = decoded;
       next()
     })
   })
