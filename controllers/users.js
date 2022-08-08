@@ -28,7 +28,7 @@ const login = (req, res) => {
           }
           const token = jwt.sign({_id: user._id}, 'secretsecretsecret', {expiresIn: '7d'}) // перенести сикрет в отдельный файл
 
-          res.cookie('jwt', token, { maxAge: 3600000, httpOnly: true });
+          res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
           req.user = {_id: user._id}
           return res.send({token});
         })

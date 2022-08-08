@@ -12,7 +12,7 @@ const statusCodes = {
 const checkToken = (req, res, next) => {
   jwt.verify(req.cookies.jwt, 'secretsecretsecret', (err, decoded) => {
     if (err) {
-      return res.status(statusCodes.badRequest).send({message : "Cannot find JWT!"})
+      return res.status(statusCodes.unauthorized).send({message : "Cannot find JWT!"})
     }
     return Users.findById(decoded, (err, user) => {
       if (err) {
