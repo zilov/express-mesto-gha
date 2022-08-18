@@ -19,6 +19,13 @@ class AlreadyExistsError extends Error {
   }
 }
 
+class ForbiddenError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 403
+  }
+}
+
 class NotFoundError extends Error {
   constructor(message) {
     super(message);
@@ -37,6 +44,7 @@ module.exports = {
   BadRequestError,
   UnauthorizedError,
   AlreadyExistsError,
+  ForbiddenError,
   NotFoundError,
   InternalServerError
 }

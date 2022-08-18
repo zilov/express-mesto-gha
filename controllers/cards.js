@@ -8,7 +8,8 @@ const statusCodes = {
 const {
   BadRequestError,
   NotFoundError,
-  InternalServerError
+  InternalServerError,
+  ForbiddenError
 } = require('./errors');
 
 const getCards = (req, res, next) => {
@@ -36,53 +37,53 @@ const deleteCard = (req, res, next) => {
     if (!card) {
       next(new NotFoundError('Card was already deleted or not exists'))
     }
-    return res.send({ message: 'Card was successfully deleted' });
+    if (req.user._id === card.owner._id) {
+      return card;
+    } else {
+      next(new ForbiddenError('Cannot delete card of other users'))
+    }
   })
+    .then(card => {
+      res.send({ message: 'Card was successfully deleted' })
+    })
     .catch(err => next(new InternalServerError(err.message)))
 };
 
 const likeCard = (req, res, next) => {
-  Users.findById(req.user._id, (err, user) => {
-    if (err) {
-      next(new NotFoundError(`Cannot find user: ${err.message}`))
+  Cards.findByIdAndUpdate(
+    req.params.id,
+    { $push: { likes: req.user._id } },
+    { new: true },
+    (err, card) => {
+      if (err) {
+        return next(new BadRequestError(err.message))
+      }
+      if (!card) {
+        return next(new NotFoundError('Card ID is not found'))
+      }
+      return card
     }
-    Cards.findByIdAndUpdate(
-      req.params.id,
-      { $push: { likes: user } },
-      { new: true },
-      (cardsErr, card) => {
-        if (cardsErr) {
-          next(new BadRequestError(cardsErr.message))
-        }
-        if (!card) {
-          next(new NotFoundError('Card ID is not found'))
-        }
-        return res.send(card);
-      },
-    );
-  })
+  )
+    .then(card => res.send(card))
     .catch(err => next(new InternalServerError(err.message)));
 };
 
 const unlikeCard = (req, res, next) => {
   Cards.findByIdAndUpdate(
     req.params.id,
-    {
-      $pull: {
-        likes: [{ _id: req.user._id }],
-      },
-    },
+    { $pull: { likes: req.user._id } },
     { new: true },
     (err, card) => {
       if (err) {
-        next(new BadRequestError(cardsErr.message))
+        return next(new BadRequestError(err.message))
       }
       if (!card) {
-        next(new NotFoundError('Card ID is not found'))
+        return next(new NotFoundError('Card ID is not found'))
       }
-      return res.send(card);
-    },
+      return card
+    }
   )
+    .then(card => res.send(card))
     .catch(err => next(new InternalServerError(err.message)))
 };
 
