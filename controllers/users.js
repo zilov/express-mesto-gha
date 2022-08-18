@@ -43,12 +43,14 @@ const getUsers = (req, res, next) => {
 
 const getUser = (req, res, next) => {
   const { id } = req.params;
-  Users.findById(id)
+  Users.findById(id, (err, user) => {
+    if (!user) {
+      next(new NotFoundError(`User with provided ID is not exists!`))
+    }
+    return user
+  })
     .then((user) => {
-      if (!user) {
-        next(new NotFoundError('User not found!'))
-      }
-      return res.send(user);
+      res.send(user);
     })
     .catch(err => next(new BadRequestError(`Incorrect ID: ${err.message}`)))
 };
