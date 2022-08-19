@@ -1,5 +1,6 @@
 const Cards = require('../models/card');
 const Users = require('../models/user');
+const mongoose = require('mongoose');
 
 const {
   BadRequestError,
@@ -28,13 +29,21 @@ const createCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   Cards.findById(req.params.id)
     .then((card) => {
+      if (!card) {
+        next(new NotFoundError('Card was already deleted or not exists'));
+      }
       if (req.user._id != card.owner._id) {
         next(new ForbiddenError('Cannot delete card of other users'));
       }
       return Cards.findByIdAndDelete(req.params.id);
     })
     .then(() => res.send({ message: 'Card was successfully deleted' }))
-    .catch(() => next(new NotFoundError('Card was already deleted or not exists')));
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError(`Validation error: ${err.message}`));
+      }
+      next(new InternalServerError(err.message));
+    });
 };
 
 const likeCard = (req, res, next) => {
@@ -49,7 +58,12 @@ const likeCard = (req, res, next) => {
       }
       return res.send(card);
     })
-    .catch((err) => next(new InternalServerError(err.message)));
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError(`Validation error: ${err.message}`));
+      }
+      next(new InternalServerError(err.message));
+    });
 };
 
 const unlikeCard = (req, res, next) => {
@@ -64,7 +78,12 @@ const unlikeCard = (req, res, next) => {
       }
       return res.send(card);
     })
-    .catch((err) => next(new InternalServerError(err.message)));
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError(`Validation error: ${err.message}`));
+      }
+      next(new InternalServerError(err.message));
+    });
 };
 
 module.exports = {
