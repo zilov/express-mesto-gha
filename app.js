@@ -40,7 +40,7 @@ app.use(router);
 
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    return res.status(400).send(err.details)
+    return res.status(400).send({message : err.message})
   }
   res.status(err.statusCode).send({ message: err.message });
 

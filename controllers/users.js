@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
+const mongoose = require('mongoose');
 
 const {
   BadRequestError,
@@ -72,26 +73,29 @@ const getCurrentUser = (req, res, next) => {
 const createUser = (req, res, next) => {
   const { email, password } = req.body;
 
-  return Users.findOne({ email }, (userErr, user) => {
-    if (userErr) {
-      next(new BadRequestError(`Error in checking for existing user: ${userErr.message}`));
-    }
-    if (!user) {
-      return bcrypt.hash(password, 10, (error, hash) => {
-        req.body.password = hash;
-        Users.create(req.body)
-          .then(() => res.send({ message: 'User successfully created!' }))
-          .catch((err) => {
-            if (err.name === 'ValidationError') {
-              next(new BadRequestError(`Validation error: ${err.message}`));
-            }
-            next(new InternalServerError(err.message));
-          });
-      });
-    }
-    next(new AlreadyExistsError('User is already exists! Please sign in!'));
-  })
-    .catch((err) => next(new InternalServerError(err.message)));
+  return Users.findOne({ email })
+    .then(user => {
+      if (!user) {
+        return bcrypt.hash(password, 10, (error, hash) => {
+          req.body.password = hash;
+          Users.create(req.body)
+            .then(() => res.send({ message: 'User successfully created!' }))
+            .catch((err) => {
+              if (err.name === 'ValidationError') {
+                next(new BadRequestError(`Validation error: ${err.message}`));
+              }
+              next(new InternalServerError(err.message));
+            });
+        });
+      }
+      next(new AlreadyExistsError('User is already exists! Please sign in!'));
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        next(new BadRequestError(`Validation error: ${err.message}`));
+      }
+      next(new InternalServerError(err.message));
+    });
 };
 
 const updateUser = (req, res, next) => {
