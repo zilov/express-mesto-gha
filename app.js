@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const {
-  celebrate, Joi, errors,
+  celebrate, Joi, errors, isCelebrateError
 } = require('celebrate');
 const { router } = require('./routes/index');
 const { login, createUser } = require('./controllers/users');
@@ -23,20 +23,14 @@ app.use(cookieParser());
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }),
-    password: Joi.string().required().min(8),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/),
+    password: Joi.string().required(),
   }),
 }), login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ['com', 'net', 'ru'] } }),
-    password: Joi.string().required().min(8),
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().regex(/https?:\/\/(www\.)?[-a-zA-Z0-9:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/),
+    email: Joi.string().required().email({ minDomainSegments: 2 }),
+    password: Joi.string().required(),
   }),
 }), createUser);
 
@@ -44,9 +38,15 @@ app.use(checkToken);
 
 app.use(router);
 
-app.use(errors());
+app.use(errors())
 
-app.use((err, req, res, next) => res.status(err.statusCode).send({ message: err.message }));
+app.use((err, req, res, next) => {
+  if (isCelebrateError(err)) {
+    res.status(400).send(err.details)
+  }
+  res.status(err.statusCode).send({ message: err.message });
+
+});
 
 app.listen(3000, () => {
   console.log('Server started!');
