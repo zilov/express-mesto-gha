@@ -38,8 +38,6 @@ app.use(checkToken);
 
 app.use(router);
 
-app.use(errors())
-
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
     res.status(400).send(err.details)
