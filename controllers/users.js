@@ -19,13 +19,13 @@ const login = (req, res, next) => {
   return Users.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        return next(new UnauthorizedError('Wrong email or password'));
+        next(new UnauthorizedError('Wrong email or password'));
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           // если все ок - генерим и сохраняем jwt, если нет - кидаем ошибку
           if (!matched) {
-            return next(new UnauthorizedError('Wrong email or password'));
+            next(new UnauthorizedError('Wrong email or password'));
           }
           const token = jwt.sign({ _id: user._id }, 'secretsecretsecret', { expiresIn: '7d' }); // перенести сикрет в отдельный файл
           res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true });
