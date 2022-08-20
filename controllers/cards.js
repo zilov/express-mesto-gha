@@ -40,7 +40,7 @@ const deleteCard = (req, res, next) => Cards.findById(req.params.id)
     if (!card) {
       next(new NotFoundError('Card was already deleted or not exists'));
     }
-    if (req.user._id != card.owner._id) {
+    if (req.user._id !== card.owner._id) {
       next(new ForbiddenError('Cannot delete card of other users'));
     }
     return Cards.findByIdAndDelete(req.params.id);
