@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const {
-  celebrate, Joi, errors, isCelebrateError
+  celebrate, Joi, isCelebrateError,
 } = require('celebrate');
 const { router } = require('./routes/index');
 const { login, createUser } = require('./controllers/users');
@@ -40,10 +40,9 @@ app.use(router);
 
 app.use((err, req, res, next) => {
   if (isCelebrateError(err)) {
-    return res.status(400).send({message : err.message})
+    return res.status(400).send({ message: err.message });
   }
-  res.status(err.statusCode).send({ message: err.message });
-
+  return res.status(err.statusCode).send({ message: err.message });
 });
 
 app.listen(3000, () => {

@@ -8,19 +8,18 @@ const {
 
 const checkToken = (req, res, next) => jwt.verify(req.cookies.jwt, 'secretsecretsecret', (err, decoded) => {
   if (err) {
-    next(new UnauthorizedError('Cannot find JWT!'));
-  } else {
-    return Users.findById(decoded, (userErr, user) => {
-      if (userErr) {
-        next(new UnauthorizedError('Error in decoding token'));
-      }
-      if (!user) {
-        next(new NotFoundError('Please sign in! Token is expired, cannot find user!'));
-      }
-      req.user = decoded;
-      return next();
-    });
+    return next(new UnauthorizedError('Cannot find JWT!'));
   }
+  return Users.findById(decoded, (userErr, user) => {
+    if (userErr) {
+      return next(new UnauthorizedError('Error in decoding token'));
+    }
+    if (!user) {
+      return next(new NotFoundError('Please sign in! Token is expired, cannot find user!'));
+    }
+    req.user = decoded;
+    return next();
+  });
 });
 
 module.exports = {
