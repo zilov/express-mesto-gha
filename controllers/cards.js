@@ -32,7 +32,7 @@ const createCard = (req, res, next) => Users.findById(req.user._id)
     if (err instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError(`Validation error: ${err.message}`));
     }
-    next(new InternalServerError(err.message));
+    return next(new InternalServerError(err.message));
   });
 
 const deleteCard = (req, res, next) => Cards.findById(req.params.id)
@@ -50,7 +50,7 @@ const deleteCard = (req, res, next) => Cards.findById(req.params.id)
     if (err instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError(`Validation error: ${err.message}`));
     }
-    next(new InternalServerError(err.message));
+    return next(new InternalServerError(err.message));
   });
 
 const likeCard = (req, res, next) => Cards.findByIdAndUpdate(
@@ -68,7 +68,7 @@ const likeCard = (req, res, next) => Cards.findByIdAndUpdate(
     if (err instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError(`Validation error: ${err.message}`));
     }
-    next(new InternalServerError(err.message));
+    return next(new InternalServerError(err.message));
   });
 
 const unlikeCard = (req, res, next) => Cards.findByIdAndUpdate(
@@ -86,7 +86,7 @@ const unlikeCard = (req, res, next) => Cards.findByIdAndUpdate(
     if (err instanceof mongoose.Error.ValidationError) {
       return next(new BadRequestError(`Validation error: ${err.message}`));
     }
-    next(new InternalServerError(err.message));
+    return next(new InternalServerError(err.message));
   });
 
 module.exports = {
