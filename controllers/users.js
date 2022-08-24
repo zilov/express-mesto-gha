@@ -96,13 +96,13 @@ const createUser = (req, res, next) => {
 
 const updateUserInfo = (req, res, next) => {
   Users.findByIdAndUpdate(
-    req.user.id,
-    { name: req.body.name, about: req.body.about },
+    req.user._id,
+    { $set: { name: req.body.name, about: req.body.about } },
     { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        throw new BadRequestError('Cannot update user info!');
+        throw new BadRequestError(`Cannot update user info! ${req.user._id}`);
       }
       return res.send(user);
     })
@@ -119,12 +119,12 @@ const updateUserInfo = (req, res, next) => {
 const updateUserAvatar = (req, res, next) => {
   Users.findByIdAndUpdate(
     req.user.id,
-    { avatar: req.body.avatar },
+    { $set: { avatar: req.body.avatar } },
     { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        throw new BadRequestError('Cannot update user avatar!');
+        throw new Error;
       }
       return res.send(user);
     })
