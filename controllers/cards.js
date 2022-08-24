@@ -29,7 +29,8 @@ const deleteCard = (req, res, next) => Cards.findById(req.params.id)
     if (!card) {
       throw new NotFoundError('Card was already deleted or not exists');
     }
-    if (req.user._id !== card.owner._id) {
+    // eslint-disable-next-line
+    if (req.user._id != card.owner._id) {
       throw new ForbiddenError('Cannot delete card of other users');
     }
     return Cards.findByIdAndDelete(req.params.id);

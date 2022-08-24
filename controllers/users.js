@@ -118,13 +118,13 @@ const updateUserInfo = (req, res, next) => {
 
 const updateUserAvatar = (req, res, next) => {
   Users.findByIdAndUpdate(
-    req.user.id,
+    req.user._id,
     { $set: { avatar: req.body.avatar } },
     { new: true, runValidators: true },
   )
     .then((user) => {
       if (!user) {
-        throw new Error;
+        throw new BadRequestError(`Cannot update user avatar! ${req.user._id}`);
       }
       return res.send(user);
     })
