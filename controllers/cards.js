@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const Cards = require('../models/card');
-const Users = require('../models/user');
 
 const {
   BadRequestError,
@@ -10,45 +9,37 @@ const {
 } = require('./errors');
 
 const getCards = (req, res, next) => Cards.find({})
-  .then((cards) => {
-    if (!cards) {
-      next(new BadRequestError('Cannot get cards list!'));
-    }
-    return res.send(cards);
-  })
+  .then((cards) => res.send(cards))
   .catch((err) => next(new InternalServerError(err.message)));
 
-const createCard = (req, res, next) => Users.findById(req.user._id)
-  .then((user) => {
-    if (!user) {
-      next(new NotFoundError('Cannot find current user to create card'));
-    }
-    req.body.owner = user;
-    return Cards.create(req.body)
-      .then((card) => res.send(card))
-      .catch((err) => next(new BadRequestError(err.message)));
-  })
-  .catch((err) => {
-    if (err instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError(`Validation error: ${err.message}`));
-    }
-    return next(new InternalServerError(err.message));
-  });
+const createCard = (req, res, next) => {
+  req.body.owner = req.user._id;
+  return Cards.create(req.body)
+    .then((card) => res.send(card))
+    .catch((err) => {
+      if (err instanceof mongoose.Error.ValidationError) {
+        return next(new BadRequestError(`Validation error: ${err.message}`));
+      }
+      return next(new InternalServerError(err.message));
+    });
+};
 
 const deleteCard = (req, res, next) => Cards.findById(req.params.id)
   .then((card) => {
     if (!card) {
-      next(new NotFoundError('Card was already deleted or not exists'));
+      throw new NotFoundError('Card was already deleted or not exists');
     }
     if (req.user._id !== card.owner._id) {
-      next(new ForbiddenError('Cannot delete card of other users'));
+      throw new ForbiddenError('Cannot delete card of other users');
     }
     return Cards.findByIdAndDelete(req.params.id);
   })
   .then(() => res.send({ message: 'Card was successfully deleted' }))
   .catch((err) => {
-    if (err instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError(`Validation error: ${err.message}`));
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadRequestError(`Id is not valid ${err.message}`));
+    } if (err instanceof NotFoundError || err instanceof ForbiddenError) {
+      return next(err);
     }
     return next(new InternalServerError(err.message));
   });
@@ -60,13 +51,15 @@ const likeCard = (req, res, next) => Cards.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      next(new NotFoundError('Card ID is not found'));
+      throw new NotFoundError('Card ID is not found');
     }
     return res.send(card);
   })
   .catch((err) => {
-    if (err instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError(`Validation error: ${err.message}`));
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadRequestError(`ID is not valid: ${err.message}`));
+    } if (err instanceof NotFoundError) {
+      return next(err);
     }
     return next(new InternalServerError(err.message));
   });
@@ -78,13 +71,15 @@ const unlikeCard = (req, res, next) => Cards.findByIdAndUpdate(
 )
   .then((card) => {
     if (!card) {
-      next(new NotFoundError('Card ID is not found'));
+      throw new NotFoundError('Card ID is not found');
     }
     return res.send(card);
   })
   .catch((err) => {
-    if (err instanceof mongoose.Error.ValidationError) {
-      return next(new BadRequestError(`Validation error: ${err.message}`));
+    if (err instanceof mongoose.Error.CastError) {
+      return next(new BadRequestError(`ID is not valid: ${err.message}`));
+    } if (err instanceof NotFoundError) {
+      return next(err);
     }
     return next(new InternalServerError(err.message));
   });
