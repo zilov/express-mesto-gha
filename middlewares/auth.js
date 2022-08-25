@@ -8,7 +8,7 @@ const {
 
 const checkToken = (req, res, next) => jwt.verify(req.cookies.jwt, 'secretsecretsecret', (err, decoded) => {
   if (err) {
-    return next(new UnauthorizedError('Cannot find JWT!'));
+    return next(new UnauthorizedError('Cannot find JWT! Please sign in!'));
   }
   return Users.findById(decoded, (userErr, user) => {
     if (userErr) {
